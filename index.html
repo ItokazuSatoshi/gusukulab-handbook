@@ -464,75 +464,93 @@ const DEFAULT_DATA = {
   },
   "staff": [
     {
-      "name": "いとかずさとし（糸数）",
+      "name": "糸数智",
+      "lineName": "いとかずさとし",
       "role": "「智さん」＝申込フォーム管理、問い合わせ対応、当日待機部屋担当"
     },
     {
-      "name": "mako",
+      "name": "武部磨子",
+      "lineName": "mako",
       "role": "未定"
     },
     {
-      "name": "Mika",
+      "name": "久場川美香",
+      "lineName": "Mika",
       "role": "未定"
     },
     {
-      "name": "Motoshi",
+      "name": "佐久眞基士",
+      "lineName": "Motoshi",
       "role": "未定"
     },
     {
-      "name": "Takahiro miyajima",
+      "name": "宮島隆浩",
+      "lineName": "Takahiro miyajima",
       "role": "未定"
     },
     {
-      "name": "yoko",
+      "name": "内間陽子",
+      "lineName": "yoko",
       "role": "未定"
     },
     {
-      "name": "あやか",
+      "name": "西平あやか",
+      "lineName": "あやか",
       "role": "未定"
     },
     {
-      "name": "あやこ",
+      "name": "武部綾子",
+      "lineName": "あやこ",
       "role": "未定"
     },
     {
-      "name": "さやか",
+      "name": "大城さやか",
+      "lineName": "さやか",
       "role": "未定"
     },
     {
-      "name": "なわあい",
+      "name": "縄田愛",
+      "lineName": "なわあい",
       "role": "未定"
     },
     {
-      "name": "もとまさ",
+      "name": "波木基真",
+      "lineName": "もとまさ",
       "role": "未定"
     },
     {
-      "name": "健太郎",
+      "name": "上原健太郎",
+      "lineName": "健太郎",
       "role": "未定"
     },
     {
-      "name": "和代",
+      "name": "糸数和代",
+      "lineName": "和代",
       "role": "未定"
     },
     {
-      "name": "夕季",
+      "name": "金城夕季",
+      "lineName": "夕季",
       "role": "未定"
     },
     {
       "name": "武部ココ",
+      "lineName": "武部ココ",
       "role": "未定"
     },
     {
       "name": "武部拓磨",
+      "lineName": "武部拓磨",
       "role": "登壇者／配信についてアシタネワークスとの打合せ担当"
     },
     {
-      "name": "玉城 成子",
+      "name": "玉城成子",
+      "lineName": "玉城 成子",
       "role": "未定"
     },
     {
       "name": "金城将希",
+      "lineName": "金城将希",
       "role": "未定"
     }
   ],
@@ -1267,7 +1285,7 @@ function templateFor(kind){
     case "ticket": return {tier:"新しい区分",unitPrice:0,count:0};
     case "otherincome": return {item:"",amount:0};
     case "expense": return {item:"",amount:0};
-    case "staff": return {name:"",role:""};
+    case "staff": return {name:"",lineName:"",role:""};
     case "dayrole": return {role:"",count:""};
     case "prep": return {month:"",plan:"",status:""};
     case "priority": return {text:"",checked:false};
@@ -1424,8 +1442,8 @@ function renderView(){
 
   html += '<section class="card" id="sec-staff"><h2><span class="no">05</span>運営スタッフ</h2>' +
     '<div class="desc">LINEグループメンバー（全'+d.staff.length+'名）。役割が判明しているメンバーのみ備考欄に記載。</div>' +
-    '<div class="table-wrap"><table><thead><tr><th>名前</th><th>役割・備考</th></tr></thead><tbody>' +
-      d.staff.map(function(r){ return '<tr><td>'+esc(r.name)+'</td><td>'+esc(r.role)+'</td></tr>'; }).join('') +
+    '<div class="table-wrap"><table><thead><tr><th>氏名</th><th>LINEネーム</th><th>役割・備考</th></tr></thead><tbody>' +
+      d.staff.map(function(r){ return '<tr><td>'+esc(r.name)+'</td><td>'+esc(r.lineName)+'</td><td>'+esc(r.role)+'</td></tr>'; }).join('') +
     '</tbody></table></div>' +
     '<div class="label">当日役割（人数のみ確定・個人名は要割当）</div>' +
     '<div class="pillrow">' + d.dayRoles.map(function(r){ return '<span class="pill">'+esc(r.role)+'　'+esc(r.count)+'</span>'; }).join('') + '</div>' +
@@ -1594,7 +1612,7 @@ function renderEdit(){
   '</section>';
 
   html += '<section class="card" id="sec-staff"><h2><span class="no">05</span>運営スタッフ</h2>' +
-    '<div class="label">メンバー一覧</div>' + objectRows("staff", d.staff, [{key:"name",label:"名前"},{key:"role",label:"役割・備考"}], "staff") +
+    '<div class="label">メンバー一覧</div>' + objectRows("staff", d.staff, [{key:"name",label:"氏名"},{key:"lineName",label:"LINEネーム"},{key:"role",label:"役割・備考"}], "staff") +
     '<div class="label">当日役割</div>' + objectRows("dayRoles", d.dayRoles, [{key:"role",label:"役割"},{key:"count",label:"人数・担当"}], "dayrole") +
   '</section>';
 
