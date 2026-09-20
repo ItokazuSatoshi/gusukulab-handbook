@@ -160,6 +160,9 @@ footer.foot{text-align:center;font-size:11.5px;color:var(--ink-soft);padding:24p
 .cat-name-row{display:flex;gap:8px;align-items:center;margin-bottom:10px;}
 .cat-name-row input[type="text"]{font-family:var(--serif);font-weight:700;font-size:14.5px;}
 .drag-handle{flex:none;width:26px;height:26px;display:flex;align-items:center;justify-content:center;color:var(--ink-soft);font-size:16px;cursor:grab;touch-action:none;user-select:none;border-radius:6px;}
+section.card.dragging{opacity:0.45;}
+section.card.drag-over{outline:2px solid var(--primary);outline-offset:-2px;}
+.section-handle{margin-right:2px;}
 .drag-handle:hover{background:var(--surface-2);color:var(--ink);}
 .chk-row.dragging, .cat-block.dragging{opacity:0.35;}
 .chk-row.drag-over{outline:2px solid var(--primary);outline-offset:-2px;background:var(--surface-2);}
@@ -182,7 +185,7 @@ footer.foot{text-align:center;font-size:11.5px;color:var(--ink-soft);padding:24p
 .label-palette-row{margin-bottom:16px;}
 .label-palette{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;}
 .label-btn{width:36px;height:36px;border-radius:50%;border:2px solid var(--border);background:var(--surface);color:var(--ink);font-size:13px;font-weight:700;}
-.label-btn.active{border-color:var(--accent);background:var(--accent);color:var(--accent-ink);}
+.label-btn.active{border-color:var(--ink);}
 .formation-block{border-top:1px solid var(--border);padding-top:16px;margin-top:16px;}
 .formation-block:first-of-type{border-top:none;padding-top:0;margin-top:0;}
 .formation-title-row{display:flex;gap:8px;align-items:center;margin-bottom:10px;}
@@ -202,6 +205,13 @@ footer.foot{text-align:center;font-size:11.5px;color:var(--ink-soft);padding:24p
 .fp-label{fill:var(--ink-soft);font-size:20px;font-family:var(--serif);}
 .fp-label-sm{fill:var(--ink-soft);font-size:13px;font-family:var(--sans);}
 .marker{position:absolute;width:28px;height:28px;margin:-14px 0 0 -14px;border-radius:50%;background:var(--accent);color:var(--accent-ink);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;border:2px solid var(--surface);box-shadow:0 2px 6px rgba(0,0,0,0.3);}
+.c-accent{--mc:var(--accent);--mt:var(--accent-ink);}
+.c-light{--mc:color-mix(in srgb, var(--accent) 45%, #ffffff);--mt:#5a2410;}
+.c-navy{--mc:#1f3a8a;--mt:#ffffff;}
+.c-sky{--mc:#8fd3f4;--mt:#0f3b57;}
+.marker.c-accent,.marker.c-light,.marker.c-navy,.marker.c-sky,.legend-badge.c-accent,.legend-badge.c-light,.legend-badge.c-navy,.legend-badge.c-sky,.label-btn.c-accent,.label-btn.c-light,.label-btn.c-navy,.label-btn.c-sky{background:var(--mc);color:var(--mt);}
+.label-btn.c-accent,.label-btn.c-light,.label-btn.c-navy,.label-btn.c-sky{border-color:var(--mc);}
+.label-btn.active{box-shadow:0 0 0 3px var(--surface),0 0 0 5px var(--ink);}
 .marker.editable{cursor:pointer;}
 .marker.editable:hover{outline:2px solid var(--danger);}
 @media (max-width:860px){
@@ -273,15 +283,15 @@ footer.foot{text-align:center;font-size:11.5px;color:var(--ink-soft);padding:24p
   <div class="layout">
     <nav class="sidenav" id="sidenav">
       <div class="progress-chip"><span>準備進捗</span><b id="progressText">—</b></div>
-      <a href="#sec-overview" data-group="overview">1. イベント概要</a>
-      <a href="#sec-speakers" data-group="overview">2. 登壇者プロフィール</a>
-      <a href="#sec-schedule" data-group="overview">3. 当日タイムスケジュール</a>
-      <a href="#sec-budget" data-group="overview">4. 収支</a>
-      <a href="#sec-staff" data-group="ops">5. 運営スタッフ</a>
-      <a href="#sec-prep" data-group="ops">6. 準備スケジュール</a>
-      <a href="#sec-todo" data-group="ops">7. 項目別やることリスト</a>
-      <a href="#sec-equipment" data-group="ops">8. 必要備品チェックリスト</a>
-      <a href="#sec-formations" data-group="ops">9. 会場・スタッフ配置</a>
+      <a href="#sec-overview" data-group="overview">イベント概要</a>
+      <a href="#sec-speakers" data-group="overview">登壇者プロフィール</a>
+      <a href="#sec-schedule" data-group="overview">当日タイムスケジュール</a>
+      <a href="#sec-budget" data-group="overview">収支</a>
+      <a href="#sec-staff" data-group="ops">運営スタッフ</a>
+      <a href="#sec-prep" data-group="ops">準備スケジュール</a>
+      <a href="#sec-todo" data-group="ops">項目別やることリスト</a>
+      <a href="#sec-equipment" data-group="ops">必要備品チェックリスト</a>
+      <a href="#sec-formations" data-group="ops">会場・スタッフ配置</a>
     </nav>
     <main><div class="wrap" id="content"></div></main>
   </div>
@@ -1528,6 +1538,7 @@ function normalizeData(d){
   });
   (d.tasks||[]).forEach(function(t){ if (t.assignee === undefined) t.assignee = ""; });
   delete d.extraStaff;
+  d.sectionOrder = (function(){ var o=(d.sectionOrder||[]).filter(function(k){return SECTION_KEYS.indexOf(k)!==-1;}); SECTION_KEYS.forEach(function(k){ if(o.indexOf(k)===-1) o.push(k); }); return o; })();
   var tk = (d.budget && d.budget.tickets) || [];
   tk.forEach(function(t){ if (!t.mode) t.mode = "会場"; });
   if (d.budget && !d.budget.onlineSplit){
@@ -1547,8 +1558,18 @@ function combinedStaffLabels(){
     var n = normName(sp.name);
     if (n && !staffNames[n]) list.push({code:n.charAt(0), name:n+"（登壇者）"});
   });
-  return list;
+  var pri = ["武部拓磨","賀数","横手","糸数智","武部ココ","糸数和代"];
+  function rank(l){ var i = -1; pri.forEach(function(k,j){ if (i===-1 && normName(l.name).indexOf(k)===0) i = j; }); return i===-1 ? pri.length : i; }
+  return list.map(function(l,i){ return {l:l,i:i,r:rank(l)}; }).sort(function(a,b){ return a.r-b.r || a.i-b.i; }).map(function(x){ return x.l; });
 }
+function staffColorClass(name){
+  var n = normName(name);
+  if (n.indexOf("武部拓磨")===0 || n.indexOf("賀数")===0 || n.indexOf("横手")===0) return "c-accent";
+  if (n.indexOf("糸数智")===0) return "c-light";
+  if (n.indexOf("武部ココ")===0 || n.indexOf("糸数和代")===0) return "c-navy";
+  return "c-sky";
+}
+function labelColorClass(code){ return staffColorClass(labelDisplayName(code)); }
 function labelDisplayName(code){
   var found = combinedStaffLabels().filter(function(l){ return l.code === code; })[0];
   return found ? found.name : code;
@@ -1582,7 +1603,7 @@ function floorplanSvg(){
 }
 function legendHtml(){
   return '<div class="legend">' + combinedStaffLabels().map(function(l){
-    return '<div class="legend-item"><span class="legend-badge">'+esc(l.code)+'</span>'+esc(l.name)+'</div>';
+    return '<div class="legend-item"><span class="legend-badge '+staffColorClass(l.name)+'">'+esc(l.code)+'</span>'+esc(l.name)+'</div>';
   }).join('') + '</div>';
 }
 function legendEditHtml(){
@@ -1590,12 +1611,12 @@ function legendEditHtml(){
 }
 function markersHtml(markers, editable){
   return (markers||[]).map(function(m, mi){
-    return '<div class="marker'+(editable?' editable':'')+'" style="left:'+m.x+'%;top:'+m.y+'%;" data-marker-idx="'+mi+'" title="'+esc(labelDisplayName(m.label))+'">'+esc(m.label)+'</div>';
+    return '<div class="marker '+labelColorClass(m.label)+(editable?' editable':'')+'" style="left:'+m.x+'%;top:'+m.y+'%;" data-marker-idx="'+mi+'" title="'+esc(labelDisplayName(m.label))+'">'+esc(m.label)+'</div>';
   }).join('');
 }
 function labelPaletteHtml(){
   return '<div class="label-palette">' + combinedStaffLabels().map(function(l){
-    return '<button type="button" class="label-btn'+(l.code===currentLabel?' active':'')+'" data-action="pick-label" data-label="'+esc(l.code)+'" title="'+esc(l.name)+'">'+esc(l.code)+'</button>';
+    return '<button type="button" class="label-btn '+staffColorClass(l.name)+(l.code===currentLabel?' active':'')+'" data-action="pick-label" data-label="'+esc(l.code)+'" title="'+esc(l.name)+'">'+esc(l.code)+'</button>';
   }).join('') + '</div>';
 }
 
@@ -1605,7 +1626,7 @@ function renderView(){
   var html = "";
 
   html += '<section class="card" id="sec-overview">' +
-    '<h2><span class="no">01</span>' + esc(d.overview.name) + '</h2>' +
+    '<h2>' + esc(d.overview.name) + '</h2>' +
     '<div class="desc">' + esc(d.overview.title) + '　' + esc(d.overview.subtitle) + '</div>' +
     '<dl class="kv">' +
       '<dt>日時</dt><dd>' + esc(d.overview.datetime) + '</dd>' +
@@ -1622,14 +1643,14 @@ function renderView(){
   '</section>';
   sections.push({group:'overview', html: html}); html = '';
 
-  html += '<section class="card" id="sec-speakers"><h2><span class="no">02</span>登壇者プロフィール</h2>' +
+  html += '<section class="card" id="sec-speakers"><h2>登壇者プロフィール</h2>' +
     d.speakers.map(function(s){
       return '<div class="speaker-card"><div class="name">'+esc(s.name)+'</div><div class="title">'+esc(s.title)+'</div><div class="bio">'+esc(s.bio)+'</div></div>';
     }).join('') +
   '</section>';
   sections.push({group:'overview', html: html}); html = '';
 
-  html += '<section class="card" id="sec-schedule"><h2><span class="no">03</span>当日タイムスケジュール</h2>' +
+  html += '<section class="card" id="sec-schedule"><h2>当日タイムスケジュール</h2>' +
     '<div class="table-wrap"><table><thead><tr><th>時刻</th><th>内容</th></tr></thead><tbody>' +
       d.schedule.map(function(r){ return '<tr><td class="time num">'+esc(r.time)+'</td><td>'+esc(r.content)+'</td></tr>'; }).join('') +
     '</tbody></table></div>' +
@@ -1640,7 +1661,7 @@ function renderView(){
 
   html = '';
 
-  html += '<section class="card" id="sec-staff"><h2><span class="no">05</span>運営スタッフ</h2>' +
+  html += '<section class="card" id="sec-staff"><h2>運営スタッフ</h2>' +
     '<div class="desc">LINEグループメンバー（全'+d.staff.length+'名）。役割が判明しているメンバーのみ備考欄に記載。</div>' +
     '<div class="table-wrap"><table><thead><tr><th>氏名</th><th>LINEネーム</th><th>役割・備考</th></tr></thead><tbody>' +
       d.staff.map(function(r){ return '<tr><td>'+esc(r.name)+'</td><td>'+esc(r.lineName)+'</td><td>'+esc(r.role)+'</td></tr>'; }).join('') +
@@ -1650,7 +1671,7 @@ function renderView(){
   '</section>';
   sections.push({group:'ops', html: html}); html = '';
 
-  html += '<section class="card" id="sec-prep"><h2><span class="no">06</span>当日までの準備スケジュール</h2>' +
+  html += '<section class="card" id="sec-prep"><h2>当日までの準備スケジュール</h2>' +
     '<div class="table-wrap"><table><thead><tr><th>月</th><th>予定内容</th><th>状況</th></tr></thead><tbody>' +
       d.prepSchedule.map(function(r){ return '<tr><td class="num" style="font-weight:700;">'+esc(r.month)+'</td><td>'+esc(r.plan)+'</td><td>'+esc(r.status)+'</td></tr>'; }).join('') +
     '</tbody></table></div>' +
@@ -1673,11 +1694,11 @@ function renderView(){
         }).join('') +
       '</div></div>';
   }).join('');
-  html += '<section class="card" id="sec-todo"><h2><span class="no">07</span>項目別やることリスト</h2>' + todoHtml + '</section>';
+  html += '<section class="card" id="sec-todo"><h2>項目別やることリスト</h2>' + todoHtml + '</section>';
   sections.push({group:'ops', html: html}); html = '';
 
   var eqDone = d.equipment.filter(function(i){return i.checked;}).length;
-  html += '<section class="card" id="sec-equipment"><h2><span class="no">08</span>必要備品チェックリスト</h2>' +
+  html += '<section class="card" id="sec-equipment"><h2>必要備品チェックリスト</h2>' +
     '<div class="desc">'+eqDone+' / '+d.equipment.length+' 確保済み</div>' +
     '<div class="checklist">' +
       d.equipment.map(function(it){
@@ -1687,7 +1708,7 @@ function renderView(){
   '</section>';
   sections.push({group:'ops', html: html}); html = '';
 
-  html += '<section class="card" id="sec-formations"><h2><span class="no">09</span>会場・スタッフ配置</h2>' +
+  html += '<section class="card" id="sec-formations"><h2>会場・スタッフ配置</h2>' +
     '<div class="desc">場面ごとのスタッフ配置プラン（<a href="'+esc(d.overview.venueUrl)+'" target="_blank" rel="noopener">会場情報はこちら</a>）</div>' +
     legendHtml() +
     d.formations.map(function(f){
@@ -1697,7 +1718,7 @@ function renderView(){
   '</section>';
   sections.push({group:'ops', html: html}); html = '';
 
-  html = sections.filter(function(s){ return s.group === pageTab; }).map(function(s){ return s.html; }).join('');
+  html = orderSections(sections.filter(function(s){ return s.group === pageTab; })).map(function(s){ return s.html; }).join('');
   html += '<footer class="foot">最終更新: '+esc(d.updated)+' ／ グスクラボ運営ハンドブック（スタッフ限定）</footer>';
   document.getElementById("content").innerHTML = html;
 }
@@ -1786,7 +1807,7 @@ function renderEdit(){
   var d = DATA;
   var sections = [];
 
-  var html = '<section class="card" id="sec-overview"><h2><span class="no">01</span>イベント概要</h2>' +
+  var html = '<section class="card" id="sec-overview"><h2>イベント概要</h2>' +
     fieldText("企画名","overview.name", d.overview.name) +
     fieldText("タイトル","overview.title", d.overview.title) +
     fieldText("サブタイトル","overview.subtitle", d.overview.subtitle) +
@@ -1805,7 +1826,7 @@ function renderEdit(){
   '</section>';
   sections.push({group:'overview', html: html}); html = '';
 
-  html += '<section class="card" id="sec-speakers"><h2><span class="no">02</span>登壇者プロフィール</h2>' +
+  html += '<section class="card" id="sec-speakers"><h2>登壇者プロフィール</h2>' +
     d.speakers.map(function(s,i){
       return '<div class="edit-table-row" style="grid-template-columns:1fr auto;"><div>' +
         '<div class="grid2">' + fieldText("氏名","speakers."+i+".name", s.name) + fieldText("肩書","speakers."+i+".title", s.title) + '</div>' +
@@ -1816,13 +1837,13 @@ function renderEdit(){
   '</section>';
   sections.push({group:'overview', html: html}); html = '';
 
-  html += '<section class="card" id="sec-schedule"><h2><span class="no">03</span>当日タイムスケジュール</h2>' +
+  html += '<section class="card" id="sec-schedule"><h2>当日タイムスケジュール</h2>' +
     objectRows("schedule", d.schedule, [{key:"time",label:"時刻"},{key:"content",label:"内容"}], "schedule") +
     '<div class="label">当日受付・体制メモ（1行ずつ）</div>' + lineRows("dayOps", d.dayOps, "dayop") +
   '</section>';
   sections.push({group:'overview', html: html}); html = '';
 
-  html += '<section class="card" id="sec-budget"><h2><span class="no">04</span>収支</h2>' +
+  html += '<section class="card" id="sec-budget"><h2>収支</h2>' +
     '<div class="desc">申込人数を入力すると金額・残席・収支差額が自動計算されます。</div>' +
     '<div class="label">申込状況（層別集計）</div>' +
     ticketsEditRows() +
@@ -1842,31 +1863,31 @@ function renderEdit(){
   '</section>';
   sections.push({group:'overview', html: html}); html = '';
 
-  html += '<section class="card" id="sec-staff"><h2><span class="no">05</span>運営スタッフ</h2>' +
+  html += '<section class="card" id="sec-staff"><h2>運営スタッフ</h2>' +
     '<div class="label">メンバー一覧</div>' + objectRows("staff", d.staff, [{key:"name",label:"氏名"},{key:"code",label:"アイコン記号（1文字）"},{key:"lineName",label:"LINEネーム"},{key:"role",label:"役割・備考"}], "staff") +
     '<div class="label">当日役割</div>' + objectRows("dayRoles", d.dayRoles, [{key:"role",label:"役割"},{key:"count",label:"人数・担当"}], "dayrole") +
   '</section>';
   sections.push({group:'ops', html: html}); html = '';
 
-  html += '<section class="card" id="sec-prep"><h2><span class="no">06</span>当日までの準備スケジュール</h2>' +
+  html += '<section class="card" id="sec-prep"><h2>当日までの準備スケジュール</h2>' +
     objectRows("prepSchedule", d.prepSchedule, [{key:"month",label:"月"},{key:"plan",label:"予定内容",area:true},{key:"status",label:"状況"}], "prep") +
     '<div class="label">企画立案当初の優先8項目（ドラッグで並び替え可）</div>' + checklistRows("priority8", d.priority8, "priority") +
   '</section>';
   sections.push({group:'ops', html: html}); html = '';
 
-  html += '<section class="card" id="sec-todo"><h2><span class="no">07</span>項目別やることリスト</h2>' +
+  html += '<section class="card" id="sec-todo"><h2>項目別やることリスト</h2>' +
     '<div class="desc">タスクごとに「種類」（企画・登壇者対応など）と「備考」を入力できます。「種類」欄は過去に入力した値を候補として選べます。「≡」をドラッグして順番を入れ替えられます。</div>' +
     checklistRows("tasks", d.tasks, "task", "タスクを追加", true) +
   '</section>';
   sections.push({group:'ops', html: html}); html = '';
 
-  html += '<section class="card" id="sec-equipment"><h2><span class="no">08</span>必要備品チェックリスト</h2>' +
+  html += '<section class="card" id="sec-equipment"><h2>必要備品チェックリスト</h2>' +
     '<div class="desc">「≡」をドラッグして順番を入れ替えられます。</div>' +
     checklistRows("equipment", d.equipment, "equipment") +
   '</section>';
   sections.push({group:'ops', html: html}); html = '';
 
-  html += '<section class="card" id="sec-formations"><h2><span class="no">09</span>会場・スタッフ配置</h2>' +
+  html += '<section class="card" id="sec-formations"><h2>会場・スタッフ配置</h2>' +
     '<div class="hint">配置図をクリックしてマーカーを配置します。マーカーをクリックすると削除できます。</div>' +
     legendEditHtml() +
     '<div class="label-palette-row"><div class="field"><label>配置する人物を選択</label></div>' + labelPaletteHtml() + '</div>' +
@@ -1881,7 +1902,7 @@ function renderEdit(){
   '</section>';
   sections.push({group:'ops', html: html}); html = '';
 
-  html = sections.filter(function(s){ return s.group === pageTab; }).map(function(s){ return s.html; }).join('');
+  html = orderSections(sections.filter(function(s){ return s.group === pageTab; })).map(function(s){ return s.html.replace('<h2>','<h2><span class="drag-handle section-handle" title="ドラッグで大項目の順番を変更">≡</span>'); }).join('');
   document.getElementById("content").innerHTML = html;
 }
 
@@ -1959,9 +1980,51 @@ document.getElementById("content").addEventListener("click", onContentClick);
 
 /* ---------- drag-and-drop reordering (mouse + touch via Pointer Events) ---------- */
 var dragState = null;
+var secDrag = null;
+function visibleSectionCards(){ return Array.prototype.slice.call(document.querySelectorAll("#content > section.card")); }
+function sectionTargetIndex(y){
+  var others = visibleSectionCards().filter(function(c){ return c !== secDrag.card; });
+  var idx = others.length;
+  for (var i=0;i<others.length;i++){
+    var r = others[i].getBoundingClientRect();
+    if (y < r.top + r.height/2){ idx = i; break; }
+  }
+  return {idx: idx, others: others};
+}
+function onSectionPointerMove(e){
+  if (!secDrag) return;
+  var t = sectionTargetIndex(e.clientY);
+  visibleSectionCards().forEach(function(c){ c.classList.remove("drag-over"); });
+  var hit = t.others[Math.min(t.idx, t.others.length-1)];
+  if (hit && t.others.length) hit.classList.add("drag-over");
+}
+function onSectionPointerUp(e){
+  document.removeEventListener("pointermove", onSectionPointerMove);
+  if (!secDrag) return;
+  var t = sectionTargetIndex(e.clientY);
+  var keys = t.others.map(function(c){ return c.id.slice(4); });
+  keys.splice(t.idx, 0, secDrag.card.id.slice(4));
+  var visibleSet = {}; keys.forEach(function(k){ visibleSet[k] = true; });
+  var order = sectionOrderList(), n = 0;
+  DATA.sectionOrder = order.map(function(k){ return visibleSet[k] ? keys[n++] : k; });
+  secDrag = null;
+  renderEdit();
+  updateSidenavGroups();
+}
 function onContentPointerDown(e){
   var handle = e.target.closest(".drag-handle");
   if (!handle) return;
+  if (handle.classList.contains("section-handle")){
+    e.preventDefault();
+    var card = handle.closest("section.card");
+    if (!card) return;
+    secDrag = {card: card};
+    card.classList.add("dragging");
+    try{ handle.setPointerCapture(e.pointerId); }catch(err){}
+    document.addEventListener("pointermove", onSectionPointerMove);
+    document.addEventListener("pointerup", onSectionPointerUp, {once: true});
+    return;
+  }
   var row = handle.closest("[data-item-path]");
   if (!row) return;
   e.preventDefault();
@@ -2017,7 +2080,24 @@ function updateSidebarProgress(){
   var el = document.getElementById("progressText");
   if (el) el.textContent = s.done + " / " + s.total;
 }
+var SECTION_KEYS = ["overview","speakers","schedule","budget","staff","prep","todo","equipment","formations"];
+function sectionOrderList(){
+  var o = (DATA && DATA.sectionOrder) || [];
+  var out = o.filter(function(k){ return SECTION_KEYS.indexOf(k) !== -1; });
+  SECTION_KEYS.forEach(function(k){ if (out.indexOf(k) === -1) out.push(k); });
+  return out;
+}
+function orderSections(list){
+  var order = sectionOrderList();
+  function key(s){ var m = s.html.match(/id="sec-(\w+)"/); return m ? m[1] : ""; }
+  return list.slice().sort(function(a,b){ return order.indexOf(key(a)) - order.indexOf(key(b)); });
+}
 function updateSidenavGroups(){
+  var nav = document.getElementById("sidenav");
+  sectionOrderList().forEach(function(k){
+    var a = nav.querySelector('a[href="#sec-'+k+'"]');
+    if (a) nav.appendChild(a);
+  });
   document.querySelectorAll(".sidenav a[data-group]").forEach(function(a){
     a.hidden = a.dataset.group !== pageTab || (a.getAttribute("href") === "#sec-budget" && mode !== "edit");
   });
