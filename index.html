@@ -181,6 +181,22 @@ section.card.drag-over{outline:2px solid var(--primary);outline-offset:-2px;}
 .money-row{display:flex;gap:10px;align-items:end;margin-bottom:8px;}
 .money-row .mw-item{flex:1;}
 .money-row .mw-amt{width:140px;}
+section.card.applicant-card{background:var(--primary);color:var(--primary-ink);border-color:var(--primary);}
+.applicant-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px;}
+section.card.applicant-card h2{color:var(--primary-ink);font-size:17px;margin:0;}
+.seat-badge{background:var(--primary-ink);color:var(--primary);font-weight:700;font-size:13px;padding:5px 14px;border-radius:999px;}
+.seat-badge.full{background:var(--accent);color:var(--accent-ink);}
+.stat-tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+.stat-tile{background:rgba(255,255,255,0.12);border-radius:10px;padding:12px 10px;text-align:center;display:flex;flex-direction:column;gap:2px;}
+.stat-tile.total{background:var(--primary-ink);color:var(--primary);}
+.stat-label{font-size:12px;opacity:0.85;font-weight:700;}
+.stat-num{font-family:var(--serif);font-size:34px;font-weight:700;line-height:1.1;font-variant-numeric:tabular-nums;}
+.stat-num small{font-size:13px;margin-left:2px;font-family:var(--sans);}
+.gauge{height:10px;background:rgba(255,255,255,0.22);border-radius:999px;margin-top:14px;overflow:hidden;}
+.gauge-fill{height:100%;background:#f2b57a;border-radius:999px;}
+.gauge-cap{font-size:12px;margin-top:6px;opacity:0.9;}
+.stat-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px;}
+.stat-chip{font-size:12px;background:rgba(255,255,255,0.16);padding:3px 10px;border-radius:999px;}
 .legend{display:flex;flex-wrap:wrap;gap:8px 14px;margin-bottom:18px;}
 .legend-item{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--ink-soft);}
 .legend-badge{width:22px;height:22px;border-radius:50%;background:var(--primary);color:var(--primary-ink);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex:none;}
@@ -253,6 +269,7 @@ section.card.drag-over{outline:2px solid var(--primary);outline-offset:-2px;}
   table th, table td{padding:10px 10px;}
   .chk-row input[type="checkbox"]{width:20px;height:20px;}
   .drag-handle{width:34px;height:34px;font-size:19px;}
+  .stat-num{font-size:28px;}
   .pagetab{padding:9px 8px;font-size:13px;}
 }
 @media (prefers-reduced-motion:no-preference){
@@ -1543,6 +1560,10 @@ function normalizeData(d){
   d.sectionOrder = (function(){ var o=(d.sectionOrder||[]).filter(function(k){return SECTION_KEYS.indexOf(k)!==-1;}); SECTION_KEYS.forEach(function(k){ if(o.indexOf(k)===-1) o.push(k); }); return o; })();
   var tk = (d.budget && d.budget.tickets) || [];
   tk.forEach(function(t){ if (!t.mode) t.mode = "会場"; });
+  if (d.budget && !d.budget.inviteAdded){
+    d.budget.inviteAdded = true;
+    if (!tk.some(function(t){ return t.tier === "招待"; })) tk.push({mode:"会場",tier:"招待",unitPrice:0,count:0});
+  }
   if (d.budget && !d.budget.onlineSplit){
     d.budget.onlineSplit = true;
     if (!tk.some(function(t){ return t.mode === "オンライン"; })){
@@ -1720,7 +1741,7 @@ function renderView(){
   '</section>';
   sections.push({group:'ops', html: html}); html = '';
 
-  html = orderSections(sections.filter(function(s){ return s.group === pageTab; })).map(function(s){ return s.html; }).join('');
+  html = (pageTab === 'overview' ? applicantStatusHtml() : '') + orderSections(sections.filter(function(s){ return s.group === pageTab; })).map(function(s){ return s.html; }).join('');
   html += '<footer class="foot">最終更新: '+esc(d.updated)+' ／ グスクラボ運営ハンドブック（スタッフ限定）</footer>';
   document.getElementById("content").innerHTML = html;
 }
@@ -2089,6 +2110,26 @@ function sectionOrderList(){
   var out = o.filter(function(k){ return SECTION_KEYS.indexOf(k) !== -1; });
   SECTION_KEYS.forEach(function(k){ if (out.indexOf(k) === -1) out.push(k); });
   return out;
+}
+function applicantStatusHtml(){
+  var cap = Number(DATA.overview.capacityNumber)||0;
+  var v = ticketModeCount("会場"), o = ticketModeCount("オンライン"), total = v + o;
+  var left = cap - v, pct = cap>0 ? Math.min(100, Math.round(v/cap*100)) : 0;
+  var seats = left<=0 ? "会場 満席" : "会場 残席 "+left+"名";
+  var chips = DATA.budget.tickets.filter(function(t){ return (Number(t.count)||0) > 0; }).map(function(t){
+    return '<span class="stat-chip">'+esc((t.mode||"会場")+" "+t.tier)+' <b>'+(Number(t.count)||0)+'名</b></span>';
+  }).join('');
+  return '<section class="card applicant-card" id="applicant-status">' +
+    '<div class="applicant-head"><h2>申込状況</h2><span class="seat-badge'+(left<=0?' full':'')+'">'+seats+'</span></div>' +
+    '<div class="stat-tiles">' +
+      '<div class="stat-tile"><span class="stat-label">会場</span><span class="stat-num">'+v+'<small>名</small></span></div>' +
+      '<div class="stat-tile"><span class="stat-label">オンライン</span><span class="stat-num">'+o+'<small>名</small></span></div>' +
+      '<div class="stat-tile total"><span class="stat-label">合計</span><span class="stat-num">'+total+'<small>名</small></span></div>' +
+    '</div>' +
+    '<div class="gauge" title="会場 '+v+' / '+cap+'名"><div class="gauge-fill" style="width:'+pct+'%"></div></div>' +
+    '<div class="gauge-cap">会場 '+v+' / 定員 '+cap+'名（'+pct+'%）</div>' +
+    (chips ? '<div class="stat-chips">'+chips+'</div>' : '') +
+  '</section>';
 }
 function orderSections(list){
   var order = sectionOrderList();
