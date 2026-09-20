@@ -164,7 +164,9 @@ section.card.dragging{opacity:0.45;}
 section.card.drag-over{outline:2px solid var(--primary);outline-offset:-2px;}
 .section-handle{margin-right:2px;}
 .drag-handle:hover{background:var(--surface-2);color:var(--ink);}
-.chk-row.dragging, .cat-block.dragging{opacity:0.35;}
+.chk-row.dragging, .cat-block.dragging, .edit-table-row.dragging, .line-row.dragging{opacity:0.35;}
+.edit-table-row.drag-over, .line-row.drag-over{outline:2px solid var(--primary);outline-offset:-2px;background:var(--surface-2);}
+.line-row{align-items:center;}
 .chk-row.drag-over{outline:2px solid var(--primary);outline-offset:-2px;background:var(--surface-2);}
 .cat-block{position:relative;}
 .cat-block.drag-over{outline:2px solid var(--primary);outline-offset:-2px;}
@@ -1734,19 +1736,20 @@ function fieldText(label, path, val, isArea){
 function fieldNumber(label, path, val){
   return '<div class="field"><label>'+label+'</label><input type="number" data-path="'+path+'" value="'+esc(val)+'" /></div>';
 }
-function lineRows(basePath, arr, kind, btnLabel){
+function lineRows(basePath, arr, kind, btnLabel, sortable){
   return '<div class="list-lines">' +
     arr.map(function(v, i){
-      return '<div class="line-row"><input type="text" data-path="'+basePath+'.'+i+'" value="'+esc(v)+'" />' +
+      return '<div class="line-row"'+(sortable?' data-item-path="'+basePath+'.'+i+'"':'')+'>'+(sortable?'<span class="drag-handle" title="ドラッグで並び替え">≡</span>':'')+'<input type="text" data-path="'+basePath+'.'+i+'" value="'+esc(v)+'" />' +
         '<button type="button" class="row-x" data-action="remove" data-path="'+basePath+'.'+i+'">✕</button></div>';
     }).join('') +
     '<button type="button" class="add-btn" data-action="add" data-kind="'+kind+'" data-path="'+basePath+'">＋ '+(btnLabel||'行を追加')+'</button>' +
   '</div>';
 }
-function objectRows(basePath, arr, cols, kind, btnLabel){
+function objectRows(basePath, arr, cols, kind, btnLabel, sortable){
   return arr.map(function(row, i){
     var inner = cols.map(function(c){ return fieldText(c.label, basePath+'.'+i+'.'+c.key, row[c.key], !!c.area); }).join('');
-    return '<div class="edit-table-row" style="grid-template-columns:1fr auto;">' +
+    return '<div class="edit-table-row" style="grid-template-columns:'+(sortable?'auto ':'')+'1fr auto;"'+(sortable?' data-item-path="'+basePath+'.'+i+'"':'')+'>' +
+      (sortable?'<span class="drag-handle" title="ドラッグで並び替え">≡</span>':'') +
       '<div class="grid2">'+inner+'</div>' +
       '<button type="button" class="row-x" data-action="remove" data-path="'+basePath+'.'+i+'">✕</button>' +
     '</div>';
@@ -1838,8 +1841,8 @@ function renderEdit(){
   sections.push({group:'overview', html: html}); html = '';
 
   html += '<section class="card" id="sec-schedule"><h2>当日タイムスケジュール</h2>' +
-    objectRows("schedule", d.schedule, [{key:"time",label:"時刻"},{key:"content",label:"内容"}], "schedule") +
-    '<div class="label">当日受付・体制メモ（1行ずつ）</div>' + lineRows("dayOps", d.dayOps, "dayop") +
+    objectRows("schedule", d.schedule, [{key:"time",label:"時刻"},{key:"content",label:"内容"}], "schedule", null, true) +
+    '<div class="label">当日受付・体制メモ（1行ずつ）</div>' + lineRows("dayOps", d.dayOps, "dayop", null, true) +
   '</section>';
   sections.push({group:'overview', html: html}); html = '';
 
