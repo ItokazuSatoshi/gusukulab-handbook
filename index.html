@@ -1888,7 +1888,7 @@ function renderEdit(){
   sections.push({group:'overview', html: html}); html = '';
 
   html += '<section class="card" id="sec-staff"><h2>運営スタッフ</h2>' +
-    '<div class="label">メンバー一覧</div>' + objectRows("staff", d.staff, [{key:"name",label:"氏名"},{key:"code",label:"アイコン記号（1文字）"},{key:"lineName",label:"LINEネーム"},{key:"role",label:"役割・備考"}], "staff") +
+    '<div class="label">メンバー一覧</div>' + objectRows("staff", d.staff, [{key:"name",label:"氏名"},{key:"code",label:"アイコン記号（1文字）"},{key:"lineName",label:"LINEネーム"},{key:"role",label:"役割・備考"}], "staff", null, true) +
     '<div class="label">当日役割</div>' + objectRows("dayRoles", d.dayRoles, [{key:"role",label:"役割"},{key:"count",label:"人数・担当"}], "dayrole") +
   '</section>';
   sections.push({group:'ops', html: html}); html = '';
